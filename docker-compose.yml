@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  gateway:
+    build:
+      context: ./gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      eureka:
+        condition: service_started
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "8081:8081"
+    depends_on:
+      eureka:
+        condition: service_started
+      gateway:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://eureka.client.db:3307/clientservicedb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD:
+
+  car:
+    build:
+      context: ./car
+    ports:
+      - "8082:8082"
+    depends_on:
+      eureka:
+        condition: service_started
+      gateway:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://eureka.car.db:3308/carservicedb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD:
+
+  eureka:
+    build:
+      context: ./eureka
+    ports:
+      - "8761:8761"
+
+  client.db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: clientservicedb
+      MYSQL_USER: root
+    ports:
+      - "3307:3306"
+
+  car.db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: carservicedb
+      MYSQL_USER: root
+    ports:
+      - "3308:3306"
